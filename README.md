@@ -33,7 +33,7 @@ Backend server leveraging Genkit for AI-driven conversation and transcription se
     ```
 3. Set up environment variables by creating a `.env` file:
     ```env
-    OPENAI_API_KEY=your_openai_api_key
+    OPENAI_API_KEY=your_OPENAI_API_KEY
     GOOGLE_API_KEY=your_google_api_key
     GOOGLE_CLOUD_CREDENTIALS=./secret_keys/google_cloud_key.json
     FIREBASE_SERVICE_ACCOUNT_KEY=./secret_keys/firebase_key.json
