@@ -9,7 +9,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
     credential: admin.credential.cert(serviceAccount.default)
   });
 } else {
-  console.warn('Firebase service account not configured');
+  console.warn('Firebase service account not configured, please set FIREBASE_SERVICE_ACCOUNT_KEY environment variable to your service account key file path.');;
 }
 
 export default admin;

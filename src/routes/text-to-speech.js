@@ -4,6 +4,11 @@ import textToSpeech from '@google-cloud/text-to-speech'
 
 const router = express.Router()
 
+if (!process.env.GOOGLE_CLOUD_CREDENTIALS) {
+   console.warn("GOOGLE_CLOUD_CREDENTIALS environment variable is not set. Please set it to your Google Cloud credentials JSON file path.")
+}
+
+
 /**
  * POST /ai/text-to-speech
  * Request JSON format:
