@@ -47,15 +47,13 @@ app.use(express.json())
 * ROUTES
 */
 
-// Simple health check route
-app.get("/", (req, res) => {
-  res.send("Hello! This server uses Genkit for conversation.")
+app.get("/", (_, res) => {
+  res.send("Hello! This server leverages AI to give our app useful features.")
 })
-
-// Mount the conversation and transcription routes
 app.use("/ai/converse", converseRouter)
 app.use("/ai/transcribe", transcribeRouter)
 app.use("/ai/text-to-speech", textToSpeechRouter)
+
 
 /*
 * SERVER ENVIROMENT MANAGING
