@@ -44,6 +44,7 @@ function defaultPrompt(language, script) {
    - reply: Your response to the user.
    - correctnessPercent: An integer (0-100) indicating how well they conveyed their meaning and grammar.
    - feedback: Brief, negative-only feedback about issues in their response (leave blank if none).
+   It's important that you always include all of these attributes, none of them can ever miss.
    Stick to a single topic for up to 3 exchanges unless the user specifies otherwise.
    Ensure natural interaction and avoid excessive instruction.
 
@@ -129,23 +130,28 @@ const sendMessage = async (session, message, systemPrompt) => {
       system: systemPrompt,
       output: {
          schema: replySchema,
-         strict: true,
-         format: 'json',
-      },
+         format: 'json'
+      }
    });
 
    try {
       const response = await chat.send(message);
-      const data = response.message?.content?.[0]?.data;
+      
+      // Extract content from nested structure
+      const content = response?.message?.content?.[0]?.data || 
+                     response?.content || 
+                     JSON.parse(response?.message?.role === 'model' ? 
+                       response.message.content[0].data : 
+                       response.message.content);
 
-      if (!data) {
-         throw new Error('Invalid AI response structure');
+      if (!content?.reply) {
+         throw new Error('Invalid AI response structure: ' + JSON.stringify(response));
       }
 
       return {
-         reply: data.reply,
-         correctnessPercent: data.correctnessPercent,
-         feedback: data.feedback
+         reply: content.reply,
+         correctnessPercent: content.correctnessPercent,
+         feedback: content.feedback
       };
    } catch (error) {
       console.error("Chat error:", error);
