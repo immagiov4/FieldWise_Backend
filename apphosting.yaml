@@ -7,7 +7,7 @@ runConfig:
 
 env:
   - variable: OPENAI_API_KEY
-    value: OPENAI_API_KEY
+    secret: OPENAI_API_KEY
   - variable: PORT
     value: "4000"
   - variable: GOOGLE_CLOUD_CREDENTIALS
