@@ -1,0 +1,16 @@
+runConfig:
+  minInstances: 1
+  maxInstances: 10
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 512
+
+env:
+  - variable: OPENAI_API_KEY
+    value: openai-api-key
+  - variable: PORT
+    value: "4000"
+  - variable: GOOGLE_CLOUD_CREDENTIALS
+    secret: google-cloud-credentials
+  - variable: BYPASS_AUTH
+    value: "true"
