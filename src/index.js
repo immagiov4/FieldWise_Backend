@@ -22,38 +22,43 @@
 // now the "converse" part simply uses Genkit's chat logic.
 //
 
-import express from "express"
-import dotenv from "dotenv"
-import converseRouter from "./routes/converse.js"
-import transcribeRouter from "./routes/transcribe.js"
-import textToSpeechRouter from "./routes/text-to-speech.js"
-
+import express from "express";
+import dotenv from "dotenv";
+import helmet from "helmet";
+import cors from "cors";
+import converseRouter from "./routes/converse.js";
+import transcribeRouter from "./routes/transcribe.js";
+import textToSpeechRouter from "./routes/text-to-speech.js";
 
 /*
 * SERVER SETUP
 */
 
 // Load environment variables from .env file
-dotenv.config()
+dotenv.config();
 
-const app = express()
-const port = process.env.PORT || 3000
+const app = express();
+const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON request bodies
-app.use(express.json())
+app.use(express.json());
 
+// Use Helmet to secure Express headers
+app.use(helmet());
+
+// Enable CORS for all routes
+app.use(cors());
 
 /*
 * ROUTES
 */
 
 app.get("/", (_, res) => {
-  res.send("Hello! This server leverages AI to give our app useful features.")
-})
-app.use("/ai/converse", converseRouter)
-app.use("/ai/transcribe", transcribeRouter)
-app.use("/ai/text-to-speech", textToSpeechRouter)
-
+  res.send("Hello! This server leverages AI to give our app useful features.");
+});
+app.use("/ai/converse", converseRouter);
+app.use("/ai/transcribe", transcribeRouter);
+app.use("/ai/text-to-speech", textToSpeechRouter);
 
 /*
 * SERVER ENVIROMENT MANAGING
@@ -62,18 +67,17 @@ app.use("/ai/text-to-speech", textToSpeechRouter)
 // Start the server in non-test environments
 if (process.env.NODE_ENV !== "test") {
   const server = app.listen(port, () => {
-    console.log(`Server listening on http://localhost:${port}`)
-  })
+    console.log(`Server listening on http://localhost:${port}`);
+  });
 
   // Graceful shutdown
   process.on("SIGTERM", () => {
-    console.log("SIGTERM received; closing server...")
+    console.log("SIGTERM received; closing server...");
     server.close(() => {
-      console.log("Server closed.")
-    })
-  })
+      console.log("Server closed.");
+    });
+  });
 }
 
-
 // Export the app for testing
-export { app }
+export { app };
