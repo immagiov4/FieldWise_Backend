@@ -102,7 +102,7 @@ const getAttributes = (req) => {
    const requiredFields = ['message', 'language'];
    for (const field of requiredFields) {
       if (typeof req.body[field] !== 'string' || req.body[field].trim() === '') {
-         throw new Error(`Missing "${field}" field or not a string.`);
+         throw new Error(`Missing "${field}" field or not a string. Received request: ${json.stringify(req)}`);
       }
    }
 
