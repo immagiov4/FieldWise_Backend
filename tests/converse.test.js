@@ -1,8 +1,8 @@
 import request from "supertest";
 import { app } from "../src/index.js";
 
-describe("Conversation API Tests (session-based)", () => {
-  test("POST /ai/converse returns 200, reply, sessionId, feedback, and correctnessPercent", async () => {
+describe("Conversation API Tests (history-based)", () => {
+  test("POST /ai/converse returns 200, reply, feedback, and correctnessPercent", async () => {
     const response = await request(app)
       .post("/ai/converse")
       .send({
@@ -12,76 +12,67 @@ describe("Conversation API Tests (session-based)", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("reply");
-    expect(response.body).toHaveProperty("sessionId");
     expect(response.body).toHaveProperty("feedback");
     expect(response.body).toHaveProperty("correctnessPercent");
 
     console.log("Reply:", response.body.reply);
   });
 
-  test("Replies remembering context using the same sessionId", async () => {
-    // 1) Start a new conversation
-    let response = await request(app)
+  test("Replies remembering context using history", async () => {
+    // 1) First message
+    let firstResponse = await request(app)
       .post("/ai/converse")
       .send({
         message: "Hi, my name is Giovanni.",
         language: "English"
       });
 
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty("reply");
-    expect(response.body).toHaveProperty("sessionId");
-    expect(response.body).toHaveProperty("feedback");
-    expect(response.body).toHaveProperty("correctnessPercent");
+    expect(firstResponse.status).toBe(200);
+    expect(firstResponse.body).toHaveProperty("reply");
 
-    console.log("First reply: ", response.body.reply);
+    // 2) Continue the conversation with history
+    const history = [
+      { role: "user", content: "Hi, my name is Giovanni." },
+      { role: "assistant", content: firstResponse.body.reply }
+    ];
 
-    const { sessionId } = response.body;
-    expect(sessionId).toBeTruthy();
-
-    // 2) Continue the conversation with the existing sessionId
-    response = await request(app)
+    const secondResponse = await request(app)
       .post("/ai/converse")
       .send({
-        sessionId,
-        message:
-          "Reply to me the word 'test-token' followed by a space and the user name previously communicated.",
-        language: "English"
+        message: "Reply to me the word 'test-token' followed by a space and the user name previously communicated.",
+        language: "English",
+        history: history
       });
 
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty("reply");
-    expect(response.body).toHaveProperty("feedback");
-    expect(response.body).toHaveProperty("correctnessPercent");
+    expect(secondResponse.status).toBe(200);
+    expect(secondResponse.body).toHaveProperty("reply");
+    expect(secondResponse.body).toHaveProperty("feedback");
+    expect(secondResponse.body).toHaveProperty("correctnessPercent");
 
     // Expect the AI to remember "Giovanni" and include "test-token"
-    const replyLower = response.body.reply.toLowerCase();
+    const replyLower = secondResponse.body.reply.toLowerCase();
     expect(replyLower).toContain("test-token");
     expect(replyLower).toContain("giovanni");
 
-    console.log("Second reply: ", response.body.reply);
+    console.log("Second reply: ", secondResponse.body.reply);
   });
 
   test("POST /ai/converse with script returns 200, coherent reply", async () => {
-    // 1) Start a new conversation
-    let response = await request(app)
+    const response = await request(app)
       .post("/ai/converse")
       .send({
-        message:
-          "System test: return me the string 'yes' if you have been instructed about following a script, " +
-          "followed by a space and the Name of the script (not the topics!) if you see one. If the language is not English, " +
-          "or something is wrong, reply just 'no'",
+        message: "System test: return me the string 'yes' if you have been instructed about following a script, " +
+                "followed by a space and the Name of the script (not the topics!) if you see one. If the language is not English, " +
+                "or something is wrong, reply just 'no'",
         language: "English",
         script: "Name: TestScript. Content: 1. First topic, 2. Second topic..."
       });
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("reply");
-    expect(response.body).toHaveProperty("sessionId");
     expect(response.body).toHaveProperty("feedback");
     expect(response.body).toHaveProperty("correctnessPercent");
 
-    // Expect the AI to include "yes" and "testscript"
     const replyLower = response.body.reply.toLowerCase();
     expect(replyLower).toContain("yes");
     expect(replyLower).toContain("testscript");

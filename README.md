@@ -67,7 +67,12 @@ npm start
          "message": "string",      // The user's input message
          "language": "string",     // ISO 639-1 language code (e.g., "en", "es")
          "script": "string",       // Required. Defines conversation context and rules
-         "sessionId": "string"     // Optional. Used to maintain conversation state
+         "history": [              // Optional. Array of previous messages
+            {
+               "role": "user" | "assistant",
+               "content": "string"
+            }
+         ]
       }
       ```
       - **message**: User's input text to process  
@@ -82,17 +87,15 @@ npm start
       3. What are the benefits of using them?
       ...etc
       ```
-      - **sessionId**: When provided, maintains conversation context across requests. If not provided, a new conversation starts and a new sessionId is generated.
+      - **history**: When provided, maintains conversation context across requests. If not provided, a new conversation starts.
    - Response Body:
       ```json
       {
          "reply": "string",              // AI's response message
-         "sessionId": "string",          // Session identifier for context tracking
-         "feedback": "string",           // Specific feedback on user's input
+         "feedback": "string",           // Negative-only feedback on user's input
          "correctnessPercent": number    // Accuracy score of user's input (0-100)
       }
       ```
-
 #### Audio Transcription
 - **POST /ai/transcribe**: Transcribes an audio file.
    - Request: `multipart/form-data` with an `audio` field
