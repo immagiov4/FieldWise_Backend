@@ -91,11 +91,14 @@ npm start
    - Response Body:
       ```json
       {
-         "reply": "string",              // AI's response message
+         "reply": "string",              // AI's response message. Can contain special tokens.
          "feedback": "string",           // Negative-only feedback on user's input
-         "correctnessPercent": number    // Accuracy score of user's input (0-100)
+         "correctnessPercent": number    // Accuracy score of user's input (0-100%)
       }
       ```
+      - **reply**: it can contain special tokens starting with `@`. They are:
+         - **@END_CONVERSATION**: indicates that the conversation finished
+      - **feedback**: a feedback about the prompt, only containing constructive negative criticism, or otherwise empty
 #### Audio Transcription
 - **POST /ai/transcribe**: Transcribes an audio file.
    - Request: `multipart/form-data` with an `audio` field
