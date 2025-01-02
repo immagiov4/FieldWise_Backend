@@ -43,19 +43,18 @@ function defaultPrompt(language, script) {
  * POST /ai/converse
  * Request JSON format:
  * {
- *   "message": string,     // Required: The current message to send to the AI
- *   "script": string,     // Required: The script to use for the conversation
- *   "language": string,    // Required: The language of the conversation
- *   "history": [{         // Optional: Array of previous messages
+ *  "history": [{         // Required: Array of conversation messages
  *     "role": "user" | "assistant",
  *     "content": string
  *   }]
+ *   "script": string,     // Required: The script to use for the conversation
+ *   "language": string,    // Required: The language of the conversation
  * }
  */
 router.post("/", authenticate, async (req, res) => {
    try {
-      const { message, systemPrompt, history = [] } = getAttributes(req);
-      const response = await sendMessage(message, systemPrompt, history);
+      const { systemPrompt, history } = getAttributes(req);
+      const response = await sendMessage(systemPrompt, history);
       res.json(response);
    } catch (error) {
       res.status(400).json({ error: error.message });
@@ -63,12 +62,20 @@ router.post("/", authenticate, async (req, res) => {
 });
 
 const getAttributes = (req) => {
-   const { message, script, language, history } = req.body;
+   const { script, language, history } = req.body;
 
-   const requiredFields = ['message', 'language'];
-   for (const field of requiredFields) {
-      if (typeof req.body[field] !== 'string' || req.body[field].trim() === '') {
-         throw new Error(`Missing "${field}" field or not a string. Received request: ${JSON.stringify(req)}`);
+   // Validate attributes
+   if (typeof language !== 'string' || language.trim() === '') {
+      throw new Error(`Missing "language" field or not a string`);
+   }
+   if (!Array.isArray(history) || history.length === 0) {
+      throw new Error(`Missing "history" field or not an array`);
+   }
+   for (const item of history) {
+      if (!item.role || !item.content ||
+         !['user', 'assistant'].includes(item.role) ||
+         typeof item.content !== 'string') {
+         throw new Error(`Invalid history item format`);
       }
    }
 
@@ -76,17 +83,17 @@ const getAttributes = (req) => {
       defaultPrompt(language, script) :
       "You're a general assistant. Respond in a friendly and helpful way. Your default language is " + language;
 
-   return { message, systemPrompt, history };
+   return { systemPrompt, history };
 };
 
-const sendMessage = async (message, systemPrompt, history) => {
-   const messages = [...history, { role: 'user', content: message }]
-   const prompt = messages.map(({ role, content }) => `${role}: ${content}`).join('\n');
+const sendMessage = async (systemPrompt, history) => {
+   const messages = history
+   const conversation = messages.map(({ role, content }) => `${role}: ${content}`).join('\n');
 
    try {
       const { output } = await ai.generate({
          system: systemPrompt,
-         prompt: prompt,
+         prompt: conversation,
          output: {
             schema: replySchema,
             format: 'json',

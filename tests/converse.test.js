@@ -6,7 +6,7 @@ describe("Conversation API Tests (history-based)", () => {
     const response = await request(app)
       .post("/ai/converse")
       .send({
-        message: "Ciao come stai?",
+        history: [{ role: "user", content: "Ciao come stai?" }],
         language: "Italiano"
       });
 
@@ -23,7 +23,7 @@ describe("Conversation API Tests (history-based)", () => {
     let firstResponse = await request(app)
       .post("/ai/converse")
       .send({
-        message: "Hi, my name is Giovanni.",
+        history: [{ role: "user", content: "Hi, my name is Giovanni." }],
         language: "English"
       });
 
@@ -33,15 +33,15 @@ describe("Conversation API Tests (history-based)", () => {
     // 2) Continue the conversation with history
     const history = [
       { role: "user", content: "Hi, my name is Giovanni." },
-      { role: "assistant", content: firstResponse.body.reply }
+      { role: "assistant", content: firstResponse.body.reply },
+      { role: "user", content: "Reply to me the word 'test-token' followed by a space and the user name previously communicated." }
     ];
 
     const secondResponse = await request(app)
       .post("/ai/converse")
       .send({
-        message: "Reply to me the word 'test-token' followed by a space and the user name previously communicated.",
-        language: "English",
-        history: history
+        history: history,
+        language: "English"
       });
 
     expect(secondResponse.status).toBe(200);
@@ -49,7 +49,6 @@ describe("Conversation API Tests (history-based)", () => {
     expect(secondResponse.body).toHaveProperty("feedback");
     expect(secondResponse.body).toHaveProperty("correctnessPercent");
 
-    // Expect the AI to remember "Giovanni" and include "test-token"
     const replyLower = secondResponse.body.reply.toLowerCase();
     expect(replyLower).toContain("test-token");
     expect(replyLower).toContain("giovanni");
@@ -61,9 +60,12 @@ describe("Conversation API Tests (history-based)", () => {
     const response = await request(app)
       .post("/ai/converse")
       .send({
-        message: "System test: return me the string 'yes' if you have been instructed about following a script, " +
-                "followed by a space and the Name of the script (not the topics!) if you see one. If the language is not English, " +
-                "or something is wrong, reply just 'no'",
+        history: [{ 
+          role: "user", 
+          content: "System test: return me the string 'yes' if you have been instructed about following a script, " +
+                   "followed by a space and the Name of the script (not the topics!) if you see one. If the language is not English, " +
+                   "or something is wrong, reply just 'no'"
+        }],
         language: "English",
         script: "Name: TestScript. Content: 1. First topic, 2. Second topic..."
       });
@@ -80,7 +82,7 @@ describe("Conversation API Tests (history-based)", () => {
     console.log("Reply: ", response.body.reply);
   });
 
-  test("POST /ai/converse with missing message returns 400", async () => {
+  test("POST /ai/converse with missing history returns 400", async () => {
     const response = await request(app)
       .post("/ai/converse")
       .send({});
@@ -91,7 +93,9 @@ describe("Conversation API Tests (history-based)", () => {
   test("POST /ai/converse with missing language returns 400", async () => {
     const response = await request(app)
       .post("/ai/converse")
-      .send({ message: "hi" });
+      .send({ 
+        history: [{ role: "user", content: "hi" }]
+      });
 
     expect(response.status).toBe(400);
   });
@@ -100,7 +104,7 @@ describe("Conversation API Tests (history-based)", () => {
     const response = await request(app)
       .post("/ai/converse")
       .send({
-        message: "Me want pizza",
+        history: [{ role: "user", content: "Me want pizza" }],
         language: "English",
         script: "Name: restaurant. Content: learning how to order food in a restaurant."
       });
@@ -116,7 +120,7 @@ describe("Conversation API Tests (history-based)", () => {
     const response = await request(app)
       .post("/ai/converse")
       .send({
-        message: "I would like to have a pizza, please.",
+        history: [{ role: "user", content: "I would like to have a pizza, please." }],
         language: "English",
         script: "Name: restaurant. Content: learning how to order food in a restaurant."
       });
