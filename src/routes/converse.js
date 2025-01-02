@@ -31,6 +31,7 @@ function defaultPrompt(language, script) {
    It's important that you always include all of these attributes, none of them can ever miss.
    Stick to a single topic for up to 3 exchanges unless the user specifies otherwise.
    Ensure natural interaction and avoid excessive instruction.
+   When you've covered all topics, and the user has no more questions, end the conversation and send a special token @END_CONVERSATION at the end of the message.
 
    ${limitations}
    

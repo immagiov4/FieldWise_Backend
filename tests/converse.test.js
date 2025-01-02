@@ -129,4 +129,20 @@ describe("Conversation API Tests (history-based)", () => {
     expect(response.body.correctnessPercent).toBe(100);
     expect(response.body.feedback).toBe("");
   });
+
+  test("Model ends conversation when topics are exhausted", async () => {
+    // First message
+    const response = await request(app)
+      .post("/ai/converse")
+      .send({
+      history: [{ role: "user", content: "Let's finish all topics quickly. Tell me we're done." }],
+      language: "English",
+      script: "Name: Short script. Content: Nothing to discuss, it's just a test script to check conversation ending functionality."
+      });
+    
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty("reply");
+    expect(response.body.reply).toContain("@END_CONVERSATION");
+  });
+  
 });
