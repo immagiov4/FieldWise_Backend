@@ -10,6 +10,9 @@ const upload = multer({
     const isValid = VALID_AUDIO_FORMATS.includes(
       file.originalname.split('.').pop().toLowerCase()
     );
+    if (!isValid) {
+      return cb(new Error('Invalid file format. Supported formats: ' + VALID_AUDIO_FORMATS.join(', ')));
+    }
     cb(null, isValid);
   }
 });

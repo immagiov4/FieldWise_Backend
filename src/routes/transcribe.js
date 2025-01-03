@@ -1,6 +1,6 @@
 // routes/transcribe.js
 import { authenticate } from "../middleware/auth.js"
-import { upload } from "../middleware/upload.js"
+import { upload, multer } from "../middleware/upload.js" // Update import to include multer
 import axios from "axios"
 import FormData from "form-data"
 import express from "express"
@@ -31,8 +31,11 @@ router.post("/", authenticate, (req, res) => {
         : err.message
       return res.status(400).json({ error: msg })
     }
+    
     if (!req.file) {
-      return res.status(400).json({ error: 'No audio file provided. Use "audio" field.' })
+      return res.status(400).json({ 
+        error: 'No audio file provided. Use "audio" field. Received fields: ' + Object.keys(req.body).join(', ')
+      });
     }
 
     try {
@@ -50,13 +53,40 @@ router.post("/", authenticate, (req, res) => {
           headers: {
             Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
             ...form.getHeaders()
-          }
+          },
+          timeout: 30000, // 30 second timeout
+          validateStatus: status => status < 500 // Don't throw on 4xx errors
         }
       )
+
+      if (whisperResponse.status !== 200) {
+        console.error("OpenAI API error:", whisperResponse.data)
+        return res.status(502).json({ 
+          error: "OpenAI API error",
+          details: whisperResponse.data
+        })
+      }
+
       res.json({ transcription: whisperResponse.data.text })
     } catch (error) {
-      console.error("Error details:", error.response?.data || error.message)
-      res.status(500).json({ error: "Error during audio transcription." })
+      console.error("Transcription error:", {
+        message: error.message,
+        response: error.response?.data,
+        code: error.code
+      })
+
+      // Handle specific error cases
+      if (error.code === 'ECONNABORTED') {
+        return res.status(504).json({ error: "Request timeout" })
+      }
+      if (error.response?.status === 429) {
+        return res.status(429).json({ error: "Rate limit exceeded" })
+      }
+      
+      res.status(500).json({ 
+        error: "Error during audio transcription",
+        details: error.message
+      })
     }
   })
 })

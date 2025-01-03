@@ -53,6 +53,15 @@ app.use(cors());
 * ROUTES
 */
 
+// Basic error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack)
+  res.status(500).json({ 
+    error: "Internal server error: " + err.message,
+    requestId: req.id 
+  })
+})
+
 app.get("/", (_, res) => {
   res.send("Hello! This server leverages AI to give our app useful features.");
 });
