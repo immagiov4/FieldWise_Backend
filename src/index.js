@@ -41,7 +41,23 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON request bodies
-app.use(express.json());
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf.toString();
+  }
+}));
+
+// Middleware to handle invalid JSON payloads
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.log("Invalid JSON payload: ", err.message);
+    return res.status(400).json({ 
+      error: "Invalid JSON payload: " + err.message + "\nPayload: " + JSON.stringify(err.body),
+      details: err.message 
+    });
+  }
+  next(err);
+});
 
 // Use Helmet to secure Express headers
 app.use(helmet());
