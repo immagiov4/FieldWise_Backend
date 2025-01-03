@@ -64,10 +64,9 @@ npm start
    - Request Body:
       ```json
       {
-         "message": "string",      // The user's input message
          "language": "string",     // ISO 639-1 language code (e.g., "en", "es")
          "script": "string",       // Required. Defines conversation context and rules
-         "history": [              // Optional. Array of previous messages
+         "history": [              // Mandatory. Array of messages
             {
                "role": "user" | "assistant",
                "content": "string"
@@ -75,7 +74,6 @@ npm start
          ]
       }
       ```
-      - **message**: User's input text to process  
       - **language**: Determines the language for AI responses  
       - **script**: Required. Contains conversation rules, context, and flow logic.
       Example of script:
@@ -87,7 +85,7 @@ npm start
       3. What are the benefits of using them?
       ...etc
       ```
-      - **history**: When provided, maintains conversation context across requests. If not provided, a new conversation starts.
+      - **history**: Conversation history.
    - Response Body:
       ```json
       {
