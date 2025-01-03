@@ -102,7 +102,7 @@ npm start
    - Request: `multipart/form-data` with an `audio` field
       ```json
       {
-         "audio": "file"    // Supported formats: MP3, WAV, FLAC (max 25MB)
+         "audio": "file"    // Supported formats: 'mp3', 'mp4', 'mpeg', 'mpga', 'wav', 'webm' (max 25MB)
       }
       ```
    - Response Body:
