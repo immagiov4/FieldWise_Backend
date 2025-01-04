@@ -96,7 +96,7 @@ npm start
       ```
       - **reply**: it can contain special tokens starting with `@`. They are:
          - **@END_CONVERSATION**: indicates that the conversation finished
-      - **feedback**: a feedback about the prompt, only containing constructive negative criticism, or otherwise empty
+      - **feedback**: a feedback about the prompt, only containing constructive negative criticism, or otherwise equals to `@NO_FEEDBACK`.
 #### Audio Transcription
 - **POST /ai/transcribe**: Transcribes an audio file.
    - Request: `multipart/form-data` with an `audio` field
